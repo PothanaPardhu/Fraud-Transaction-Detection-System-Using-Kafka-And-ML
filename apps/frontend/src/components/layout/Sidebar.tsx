@@ -1,30 +1,30 @@
 // apps/frontend/src/components/layout/Sidebar.tsx
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuthStore } from "@/store/authStore";
+import { UserRole } from "@/types";
 import { 
-  ShieldAlert, 
   LayoutDashboard, 
   UserCheck, 
   BarChart3, 
   Cpu, 
   Sliders, 
   User, 
-  LogOut,
-  ChevronRight
+  ShieldAlert, 
+  LogOut 
 } from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
-import { UserRole } from "@/types";
 
 interface NavItem {
   label: string;
   href: string;
-  icon: any;
+  icon: React.ElementType;
   allowedRoles: UserRole[];
 }
 
-const navItems: NavItem[] = [
+const NAV_ITEMS: NavItem[] = [
   {
     label: "Admin Overview",
     href: "/dashboard",
@@ -65,89 +65,78 @@ const navItems: NavItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user, setRole, logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
 
-  const currentRole = user?.role || "SUPER_ADMIN";
+  // Prevent SSR/hydration mismatch for Zustand state
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Fallback to SUPER_ADMIN if user or user.role is not yet loaded
+  const userRole: UserRole = user?.role || "SUPER_ADMIN";
+
+  // Filter menu options based on active role permissions
+  const visibleNavItems = NAV_ITEMS.filter((item) =>
+    item.allowedRoles.includes(userRole)
+  );
 
   return (
-    <aside className="w-64 bg-[#0B0F19]/90 border-r border-white/10 flex flex-col justify-between h-screen sticky top-0 backdrop-blur-xl z-30">
-      <div>
+    <aside className="w-64 bg-[#0B0F19] border-r border-white/10 flex flex-col justify-between p-4 h-screen sticky top-0 z-40 select-none shrink-0">
+      <div className="space-y-6">
         {/* Brand Header */}
-        <div className="p-5 flex items-center gap-3 border-b border-white/10">
-          <div className="p-2 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-400">
+        <Link href="/" className="flex items-center gap-3 px-2 py-1">
+          <div className="p-2 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400">
             <ShieldAlert className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="font-bold text-base tracking-wide text-white">FraudShield AI</h1>
-            <p className="text-[11px] text-gray-400 font-mono-code">v2.4.0 • Enterprise</p>
+            <span className="font-bold text-sm tracking-wide text-white block">FraudShield AI</span>
+            <span className="text-[9px] font-mono-code text-blue-400 block uppercase">
+              {mounted ? userRole.replace("_", " ") : "SUPER ADMIN"}
+            </span>
           </div>
-        </div>
+        </Link>
 
-        {/* Role Switcher */}
-        <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
-          <label className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold block mb-1">
-            Simulate Role View
-          </label>
-          <select
-            value={currentRole}
-            onChange={(e) => setRole(e.target.value as UserRole)}
-            className="w-full bg-[#111827] text-xs text-blue-300 border border-white/10 rounded px-2 py-1.5 outline-none focus:border-blue-500"
-          >
-            <option value="SUPER_ADMIN">Super Admin</option>
-            <option value="ADMINISTRATOR">Administrator</option>
-            <option value="FRAUD_ANALYST">Fraud Analyst</option>
-            <option value="CUSTOMER">Customer View</option>
-          </select>
-        </div>
+        {/* Navigation Menu */}
+        <nav className="space-y-1">
+          {visibleNavItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
 
-        {/* Nav List */}
-        <nav className="p-3 space-y-1">
-          {navItems
-            .filter((item) => item.allowedRoles.includes(currentRole))
-            .map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
-                    isActive
-                      ? "bg-blue-600/20 text-blue-400 border border-blue-500/30 font-medium"
-                      : "text-gray-400 hover:text-gray-200 hover:bg-white/5"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isActive ? "text-blue-400" : "text-gray-400"}`} />
-                    <span>{item.label}</span>
-                  </div>
-                  {isActive && <ChevronRight className="w-4 h-4 text-blue-400" />}
-                </Link>
-              );
-            })}
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-mono-code transition ${
+                  isActive
+                    ? "bg-blue-600 text-white font-semibold shadow-lg shadow-blue-600/20"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-400"}`} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
-      {/* Footer Profile */}
-      <div className="p-4 border-t border-white/10 bg-white/[0.01]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white">
-              {user?.name ? user.name.slice(0, 2).toUpperCase() : "PP"}
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-white truncate max-w-[110px]">{user?.name}</p>
-              <p className="text-[10px] text-gray-400 font-mono-code">{user?.role}</p>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="p-1.5 text-gray-400 hover:text-red-400 rounded-lg hover:bg-white/5 transition"
-            title="Logout"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+      {/* User Session Footer */}
+      <div className="pt-4 border-t border-white/10 space-y-3">
+        <div className="px-2">
+          <p className="text-xs font-bold text-white font-mono-code truncate">
+            {mounted && user?.email ? user.email : "pardhu@fraudshield.ai"}
+          </p>
+          <span className="text-[10px] text-emerald-400 font-mono-code block mt-0.5">● Session Active</span>
         </div>
+
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono-code text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Sign Out</span>
+        </button>
       </div>
     </aside>
   );

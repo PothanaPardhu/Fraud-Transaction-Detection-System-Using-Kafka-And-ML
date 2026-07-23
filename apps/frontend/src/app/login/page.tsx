@@ -5,10 +5,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { UserRole } from "@/types";
-import { ShieldAlert, KeyRound, User, ArrowRight, Lock, CheckCircle2 } from "lucide-react";
+import { ShieldAlert, KeyRound, User, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
-  const router = Router();
+  const router = useRouter();
   const { login } = useAuthStore();
   const [email, setEmail] = useState("pardhu@fraudshield.ai");
   const [role, setRole] = useState<UserRole>("SUPER_ADMIN");
