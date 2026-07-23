@@ -6,15 +6,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { UserRole } from "@/types";
-import { 
-  LayoutDashboard, 
-  UserCheck, 
-  BarChart3, 
-  Cpu, 
-  Sliders, 
-  User, 
-  ShieldAlert, 
-  LogOut 
+import {
+  LayoutDashboard,
+  UserCheck,
+  BarChart3,
+  Cpu,
+  Sliders,
+  User,
+  ShieldAlert,
+  LogOut,
+  X,
 } from "lucide-react";
 
 interface NavItem {
@@ -63,7 +64,12 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
@@ -82,20 +88,34 @@ export default function Sidebar() {
   );
 
   return (
-    <aside className="w-64 bg-[#0B0F19] border-r border-white/10 flex flex-col justify-between p-4 h-screen sticky top-0 z-40 select-none shrink-0">
+    <aside
+      className={`flex h-screen w-64 flex-col justify-between border-r border-white/10 bg-[#0B0F19] p-4 transition-transform duration-200 select-none shrink-0 ${
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
       <div className="space-y-6">
         {/* Brand Header */}
-        <Link href="/" className="flex items-center gap-3 px-2 py-1">
-          <div className="p-2 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400">
-            <ShieldAlert className="w-6 h-6" />
-          </div>
-          <div>
-            <span className="font-bold text-sm tracking-wide text-white block">FraudShield AI</span>
-            <span className="text-[9px] font-mono-code text-blue-400 block uppercase">
-              {mounted ? userRole.replace("_", " ") : "SUPER ADMIN"}
-            </span>
-          </div>
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-3 px-2 py-1">
+            <div className="p-2 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="font-bold text-sm tracking-wide text-white block">FraudShield AI</span>
+              <span className="text-[9px] font-mono-code text-blue-400 block uppercase">
+                {mounted ? userRole.replace("_", " ") : "SUPER ADMIN"}
+              </span>
+            </div>
+          </Link>
+
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-white/10 p-2 text-gray-400 transition hover:bg-white/10 hover:text-white md:hidden"
+            aria-label="Close sidebar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
         {/* Navigation Menu */}
         <nav className="space-y-1">

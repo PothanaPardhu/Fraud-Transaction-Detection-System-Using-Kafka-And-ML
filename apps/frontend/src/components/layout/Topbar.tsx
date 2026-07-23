@@ -1,19 +1,33 @@
 // apps/frontend/src/components/layout/Topbar.tsx
 "use client";
 
-import { Bell, Activity, Search } from "lucide-react";
+import { Bell, Activity, Search, Menu } from "lucide-react";
 
-export default function Topbar() {
+interface TopbarProps {
+  onToggleSidebar?: () => void;
+}
+
+export default function Topbar({ onToggleSidebar }: TopbarProps) {
   return (
-    <header className="h-16 border-b border-white/10 bg-[#0B0F19]/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-20">
-      {/* Search Bar */}
-      <div className="relative w-80">
-        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search Transaction ID, Customer, or IP..."
-          className="w-full bg-[#111827] border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 font-mono-code transition"
-        />
+    <header className="h-16 border-b border-white/10 bg-[#0B0F19]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onToggleSidebar}
+          className="rounded-lg border border-white/10 bg-white/5 p-2 text-gray-300 transition hover:bg-white/10 hover:text-white md:hidden"
+          aria-label="Toggle sidebar"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
+
+        {/* Search Bar */}
+        <div className="relative w-64 sm:w-80">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search Transaction ID, Customer, or IP..."
+            className="w-full bg-[#111827] border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 font-mono-code transition"
+          />
+        </div>
       </div>
 
       {/* Status Badges */}
